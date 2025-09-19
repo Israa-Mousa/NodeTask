@@ -7,6 +7,7 @@ export const registerDTOSchema = userSchema.pick({
     name: true,
     email: true,
     password: true,
+    role:true
     })satisfies ZodType<RegisterDTO>;
 
 
@@ -14,4 +15,4 @@ export const registerDTOSchema = userSchema.pick({
     export const loginDTOSchema = userSchema.pick({ 
         email: true,
         password: true
-    })satisfies ZodType<LoginDTO>;
+    })satisfies ZodType<LoginDTO>;   

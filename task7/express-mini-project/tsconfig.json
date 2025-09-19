@@ -5,15 +5,21 @@
      "rootDir": "./src",
      "outDir": "./dist",
        "noEmit": true,
+   "esModuleInterop": true,
+  "allowSyntheticDefaultImports": true,
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+   // "module": "nodenext",
+   "module": "commonjs",
+"esModuleInterop": true,
+"allowSyntheticDefaultImports": true,
+
     "target": "esnext",
     "types": [],
     // For nodejs:
     "lib": ["esnext"],
-    "types": ["node"],
+    "types": ["node","jest"], // If you use nodejs, install types with npm install -D @types/node
     // and npm install -D @types/node
 
     // Other Outputs
@@ -41,5 +47,11 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+     "baseUrl": ".",
+    "paths": {
+      "@test/*": ["test/*"]
+    }
+  },
+  "include": ["src/**/*", "test/**/*"]
+  
 }

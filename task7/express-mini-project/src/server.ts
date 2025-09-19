@@ -11,8 +11,8 @@ import { userRepository } from "./users/user.repsitory";
 import { courseRouter } from "./courses/course.routes";
 import path from 'node:path';
 
-userRepository.init()
-const app = express();
+//userRepository.init()
+export const app = express();
 const PORT = getEnvOrThrow('PORT');
 const ApiRoute = '/api/v1/';
 
@@ -52,6 +52,8 @@ app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   handleError(error, res);
 });
 
+if(process.env.NODE_ENV !== 'test'){
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
+}
