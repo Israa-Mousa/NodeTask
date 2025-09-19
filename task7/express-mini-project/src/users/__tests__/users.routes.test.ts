@@ -1,8 +1,7 @@
 import httpClient from 'supertest';
 import { app } from '../../server';
 import  {unAuthedTestClient,authedTestClient} from "../../tests/hepler/supertest.helper"
-import { userData } from '../user.data';
-import { create } from 'domain';
+
 describe('userEndpoints', () => {
 it('GET /api/v1/users with unauthed agent will throw error', async () => {
     const response = await unAuthedTestClient.get('/api/v1/users');
