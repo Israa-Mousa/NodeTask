@@ -1,33 +1,52 @@
-import { app } from    "../../server";
-
-import { userData } from    "../../users/user.data";
-import TestAgent from 'supertest/lib/agent';
+import { app } from "../../server";  
 import supertest from "supertest";
-
+import { createRandomUser } from "../../seeds/user.seed";
 import { signJwt } from "../../shared/utils/jwt.utils";
-  export  let authedTestClient: TestAgent;
-  export  let unAuthedTestClient: TestAgent;
+import { Role } from "../../users/role.enum"; 
+import { userRepository } from "../../users/user.repsitory"; 
 
-export default async function () {
-  const users = await userData;
+export type TestClients = {
+  authedClient: ReturnType<typeof supertest.agent>;
+  studentClient: ReturnType<typeof supertest.agent>;
+  unAuthedClient: ReturnType<typeof supertest.agent>;
+  users: {
+    adminUser: any;
+    coachUser: any;
+    studentUser: any;
+  };
+};
 
+export const setupTestClients = async (): Promise<TestClients> => {
+  console.log("=== Test Setup Started ===");
 
-  if (!users || users.length === 0) {
-    throw new Error("No users found");
-  }
+  const adminUser = createRandomUser(Role.ADMIN);
+  const coachUser = createRandomUser(Role.COACH);
+  const studentUser = createRandomUser(Role.STUDENT);
 
-  const user1 = users[0];
-  if (!user1) {
-    throw new Error("User data is undefined");
-  }
-  if (!user1.id || !user1.role) {
-    throw new Error("User data is incomplete");
-  }
+  await userRepository.save(adminUser);
+  await userRepository.save(coachUser);
+  await userRepository.save(studentUser);
+  
+  console.log("Users in Repository:", userRepository.findAll());
 
-  const token = signJwt({ sub: user1.id, role: user1.role });
+  const adminToken = signJwt({ sub: adminUser.id, role: adminUser.role });
+  const coachToken = signJwt({ sub: coachUser.id, role: coachUser.role });
+  const studentToken = signJwt({ sub: studentUser.id, role: studentUser.role });
 
-authedTestClient= supertest(app).set("Authorization", `Bearer ${token}`).
-set('Accept', 'application/json');
+  console.log("Admin Token:", adminToken);
+  console.log("Coach Token:", coachToken);
+  console.log("Student Token:", studentToken);
 
-  unAuthedTestClient=supertest(app);   
-}
+  const authedClient = supertest.agent(app).set("Authorization", `Bearer ${coachToken}`);
+  const studentClient = supertest.agent(app).set("Authorization", `Bearer ${studentToken}`);
+  const unAuthedClient = supertest.agent(app);
+
+  console.log("Clients:", { authedClient, studentClient, unAuthedClient });
+
+  return {
+    authedClient,
+    studentClient,  
+    unAuthedClient,
+    users: { adminUser, coachUser, studentUser },
+  };
+};

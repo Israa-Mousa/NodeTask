@@ -16,18 +16,21 @@ export const isAuthenticated = async (
     console.log("JWT:", jwtToken);
 
     try {
-         console.log("Payload:");
+      console.log("Payload:");
       const payload = verifyJwt(jwtToken);
-   console.log("Payload:", payload.sub);
-   const userId=payload.sub as string;
-      console.log("Payload:", payload.name);
+      console.log("Payload:", payload.sub);
+      const userId = payload.sub as string;
 
-      const isUserExist = userService.isUserIdExist(userId);
-         
+      console.log("Payload:", payload.role);
+
+      // انتظر استجابة الدالة غير المتزامنة
+      const isUserExist = await userService.isUserIdExist(userId);
+
       console.log("Is User Exist:", isUserExist);
       if (isUserExist) {
-         const user = userService.getUser(userId);
-              req.user = user;
+        // انتظر الحصول على المستخدم من قاعدة البيانات
+        const user = await userService.getUser(userId);
+        req.user = user;
         next();
         return;
       } else {

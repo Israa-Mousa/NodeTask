@@ -79,6 +79,7 @@ class UserService {
     return userRepository.delete(id);
   }
     isUserIdExist(id:string):boolean{
+      
       console.log('Checking if user exists with ID:', id);
    return !! userRepository.findById(id);
   }
