@@ -6,18 +6,35 @@ import { checkRole } from '../shared/middlewares/role.middleware';
 
 const router = Router();
 
-const authenticateAndCheckRole = [isAuthenticated, uploadSingle('image'), checkRole(['ADMIN', 'COACH'])];
+// إذا البيئة اختبارية، نستخدم middleware فارغ بدلاً من multer
+const uploadMiddleware = process.env.NODE_ENV === "test"
+  ? (req: any, res: any, next: any) => next()
+  : uploadSingle("image");
 
+// حماية routes مع multer و role
+const authenticateAndCheckRole = [isAuthenticated, uploadMiddleware, checkRole(['ADMIN', 'COACH'])];
 
+// GET جميع الكورسات
+router.get(
+  '/',
+  checkRole(['STUDENT', 'ADMIN', 'COACH']),
+  courseController.getCourses
+);
 
-router.get('/', isAuthenticated, checkRole(['STUDENT', 'ADMIN', 'COACH']), courseController.getCourses);
-router.get('/:id', isAuthenticated, checkRole(['STUDENT', 'ADMIN', 'COACH']), courseController.getCourse);
+// GET كورس حسب id
+router.get(
+  '/:id',
+  checkRole(['STUDENT', 'ADMIN', 'COACH']),
+  courseController.getCourse
+);
 
- router.post('/',authenticateAndCheckRole, courseController.createCourse);
+// POST كورس جديد
+router.post('/', authenticateAndCheckRole, courseController.createCourse);
 
-router.put('/:id', authenticateAndCheckRole,courseController.updateCourse);
+// PUT تحديث كورس
+router.put('/:id', authenticateAndCheckRole, courseController.updateCourse);
+
+// DELETE حذف كورس
 router.delete('/:id', authenticateAndCheckRole, courseController.deleteCourse);
-//router.get('/', isAuthenticated, courseController.getCourses);
-//router.get('/:id', isAuthenticated, courseController.getCourse);
-//router.post('/', isAuthenticated, uploadSingle('image'), courseController.createCourse);
-export  const courseRouter = router;
+
+export const courseRouter = router;

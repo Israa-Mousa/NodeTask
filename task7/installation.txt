@@ -8,3 +8,12 @@ npm install -D typescript tsx @types/node @types/express @types/jsonwebtoken
 npm i express
 
 npm i dotenv
+
+npm install --save-dev jest ts-jest @types/jest
+npx ts-jest config:init
+
+npm install supertest --save-dev
+npm install --save-dev @types/supertest
+
+
+npm install @faker-js/faker --save-dev

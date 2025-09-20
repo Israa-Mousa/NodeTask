@@ -1,44 +1,104 @@
 import { createArgonHash } from '../shared/utils/argon.utils';
 import { Role } from './role.enum';
 import { User } from './user.entity';
-
+import {userData}  from './user.data'; 
 export class UserRepository {
+   
   private users: User[] = [];
   private idCounter = 1;
-
-  async init() {
-    this.users = [
-      {
-        id: '1',
-        name: 'Admin',
-        email: 'admin@no.com',
-        password: await createArgonHash('12345678'),
-        role: Role.ADMIN,
-        createdAt: new Date('2025-01-01T10:00:00Z'),
-        updatedAt: new Date('2025-01-01T10:00:00Z'),
-      },
-      {
-        id: '2',
-        name: 'Belal',
-        email: 'belal@example.com',
-        password: await createArgonHash('12345678'),
-        role: Role.COACH,
-        createdAt: new Date('2025-03-01T14:30:00Z'),
-        updatedAt: new Date('2025-03-01T14:30:00Z'),
-      },
-      {
-        id: '3',
-        name: 'israa',
-        email: 'isra@gmail.com',
-        password: await createArgonHash('12345678'),
-        role: Role.STUDENT,
-        createdAt: new Date('2025-02-01T12:00:00Z'),
-        updatedAt: new Date('2025-02-01T12:00:00Z'),
-      },
-    ];
-
-    this.idCounter = this.users.length + 1;
+constructor(userDb: User[] = userData) { 
+    this.users = userDb;
+    this.idCounter = userDb.length + 1;
   }
+  //     this.users = users;
+  //     this.idCounter = users.length + 1;
+  //   }).catch((err) => {
+  //     console.error('Failed to load initial users:', err);
+  //   });
+  // }
+  // constructor(userDb:Promise<User[]>=userData) {
+  //  this.users  =userDb;
+  // }
+  // async init() {
+  //   this.users = [
+  //     {
+  //       id: '1',
+  //       name: 'Admin',
+  //       email: 'admin@no.com',
+  //       password: await createArgonHash('12345678'),
+  //       role: Role.ADMIN,
+  //       createdAt: new Date('2025-01-01T10:00:00Z'),
+  //       updatedAt: new Date('2025-01-01T10:00:00Z'),
+  //     },
+  //     {
+  //       id: '2',
+  //       name: 'Belal',
+  //       email: 'belal@example.com',
+  //       password: await createArgonHash('12345678'),
+  //       role: Role.COACH,
+  //       createdAt: new Date('2025-03-01T14:30:00Z'),
+  //       updatedAt: new Date('2025-03-01T14:30:00Z'),
+  //     },
+  //     {
+  //       id: '3',
+  //       name: 'israa',
+  //       email: 'isra@gmail.com',
+  //       password: await createArgonHash('12345678'),
+  //       role: Role.STUDENT,
+  //       createdAt: new Date('2025-02-01T12:00:00Z'),
+  //       updatedAt: new Date('2025-02-01T12:00:00Z'),
+  //     },
+  //   ];
+  //   this.idCounter = this.users.length + 1;
+  // }
+
+
+  //  constructor(userDb: Promise<User[]> = userData) {
+  //   // Wait for the promise to resolve
+  //   userDb.then((users) => {
+  //     this.users = users;
+  //     this.idCounter = users.length + 1;
+  //   }).catch((err) => {
+  //     console.error('Failed to load initial users:', err);
+  //   });
+  // }
+  // constructor(userDb:Promise<User[]>=userData) {
+
+  //  this.users  =userDb;
+  // }
+  // async init() {
+  //   this.users = [
+  //     {
+  //       id: '1',
+  //       name: 'Admin',
+  //       email: 'admin@no.com',
+  //       password: await createArgonHash('12345678'),
+  //       role: Role.ADMIN,
+  //       createdAt: new Date('2025-01-01T10:00:00Z'),
+  //       updatedAt: new Date('2025-01-01T10:00:00Z'),
+  //     },
+  //     {
+  //       id: '2',
+  //       name: 'Belal',
+  //       email: 'belal@example.com',
+  //       password: await createArgonHash('12345678'),
+  //       role: Role.COACH,
+  //       createdAt: new Date('2025-03-01T14:30:00Z'),
+  //       updatedAt: new Date('2025-03-01T14:30:00Z'),
+  //     },
+  //     {
+  //       id: '3',
+  //       name: 'israa',
+  //       email: 'isra@gmail.com',
+  //       password: await createArgonHash('12345678'),
+  //       role: Role.STUDENT,
+  //       createdAt: new Date('2025-02-01T12:00:00Z'),
+  //       updatedAt: new Date('2025-02-01T12:00:00Z'),
+  //     },
+  //   ];
+
+  //   this.idCounter = this.users.length + 1;
+  // }
 
   findAll(): User[] {
     return this.users;
@@ -51,7 +111,26 @@ export class UserRepository {
   findByEmail(email: string): User | undefined {
     return this.users.find((user) => user.email === email);
   }
-
+  // دالة لحفظ مستخدم (إما تحديث أو إضافة)
+  async save(user: User): Promise<User> {
+    // إذا كان المستخدم موجوداً بالفعل في المصفوفة بناءً على ID
+    const existingUser = this.findById(user.id);
+    
+    if (existingUser) {
+      // إذا كان موجوداً، نقوم بتحديث بياناته
+      existingUser.name = user.name;
+      existingUser.email = user.email;
+      existingUser.role = user.role;
+      existingUser.updatedAt = new Date();
+    //  console.log('Updated user:', existingUser);
+      return existingUser;
+    } else {
+      // إذا لم يكن موجوداً، نقوم بإنشاء مستخدم جديد
+      this.users.push(user);
+   //   console.log('Created new user:', user);
+      return user;
+    }
+  }
   async create(
     name: string,
     email: string,
