@@ -1,9 +1,11 @@
 import { faker } from '@faker-js/faker';
 
-import { PrismaClient} from '../src/generated/prisma';
+// import { PrismaClient} from '../src/generated/prisma';
+// import { PrismaClient } from '../../../src/generated/prisma';
+import { PrismaClient } from '../src/generated/prisma';
 
-import { createRandomUser } from "../express-mini-project/src/seeds/user.seed";
-import { createRandomCourse } from "../express-mini-project/src/seeds/course.seed";
+import { createRandomUser } from "../seeds/user.seed";
+import { createRandomCourse } from "../seeds/course.seed";
 
 const prisma = new PrismaClient();
 

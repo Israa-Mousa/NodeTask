@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker';
-import { Course } from '../../../src/generated/prisma';
-export function createRandomCourse(userId: string): Omit<Course, 'id' | 'user'> {
+// import { Course } from '../../../src/generated/prisma';
+import { Course } from '../src/generated/prisma';
+
+export function createRandomCourse(userId: number): Omit<Course, 'id' | 'user'> {
   return {
     title: faker.lorem.words(3),
     description: faker.lorem.sentences(2),

@@ -1,7 +1,9 @@
 import { prisma } from 'src/prisma/service/prisma.service';
 import { createArgonHash } from '../shared/utils/argon.utils';
 import { Role } from './role.enum';
-import { User } from '../../../src/generated/prisma';
+// import { User } from '../../../src/generated/prisma';
+import { User } from '../src/generated/prisma';
+
 // import { prisma } from '../prisma/service/prisma.service';
 export class UserRepository {
 
@@ -10,7 +12,7 @@ export class UserRepository {
     return this.prismaUser.findMany();
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: number): Promise<User | null> {
     return this.prismaUser.findUnique({
       where: { id: id },
     });

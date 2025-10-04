@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { User, Role } from "../../../src/generated/prisma";
+// import { User, Role } from "../../../src/generated/prisma";
+import { User, Role } from "../src/generated/prisma";
 
 export function createRandomUser(): Omit<User, 'id'> {
   return {

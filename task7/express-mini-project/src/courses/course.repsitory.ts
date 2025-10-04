@@ -1,60 +1,54 @@
 
-import { Course } from '../../../src/generated/prisma';
-import { prisma } from '../../../prisma/service/prisma.service'
+import { string } from 'zod';
+import { Course } from '../src/generated/prisma';
+import { prisma } from '../prisma/service/prisma.service';
 export class CourseRepository {
 
    private prismaCourse=prisma.course;
   findAll():Promise< Course[]> {
-    return prisma.this.courses;
+    return this.prismaCourse.findMany({
+       //where: query
+    });
   }
 
-  findById(id: string): Course | undefined {
-    return this.courses.find(course => course.id === id);
+  findById(id: number) {  
+     return this.prismaCourse.findUniqueOrThrow({
+      where:{id}
+    })
+    
   }
-
-  create(
+ async create(
     title: string,
     description: string,
-    createdBy: string,
+    createdBy: number,
     image?: string
-  ): Course {
-    const newCourse: Course = {
-      id: this.idCounter.toString(),
-      title,
-      description,
-      createdBy,
-      image,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.courses.push(newCourse);  
-    this.idCounter++; 
-    return newCourse;
+  ): Promise<Course> {
+    return this.prismaCourse.create({
+      data: {
+        title,
+        description,
+        createdBy,
+        image,
+      },
+    });
+  }
+
+    async update(id: number, updatedCourse: Partial<Course>): Promise<Course | null> {
+    try {
+      return this.prismaCourse.update({
+        where: { id },
+        data: { ...updatedCourse },
+      });
+    } catch (err) {
+      return null;
+    }
   }
 
 
-  update(id: string, updatedCourse: Partial<Course>): Course | undefined {
-    const course = this.courses.find(course => course.id === id);
-    if (!course) return undefined;
-
-
-    const index = this.courses.indexOf(course);
-    const updatedData: Course = {
-      ...course,
-      ...updatedCourse,  
-      updatedAt: new Date(),  
-    };
-
-    this.courses[index] = updatedData; 
-    return updatedData;
-  }
-
-  delete(id: string): boolean {
-    const index = this.courses.findIndex(course => course.id === id);
-    if (index === -1) return false;  
-    this.courses.splice(index, 1); 
-    return true;
-  }
+  delete(id: number) {
+   return this.prismaCourse.delete({
+      where:{id:Number(id)}
+    })
 }
-
+}
 export const courseRepository = new CourseRepository();
