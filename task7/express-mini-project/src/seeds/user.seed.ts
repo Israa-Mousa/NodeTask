@@ -6,7 +6,7 @@ export function createRandomUser(): Omit<User, 'id'> {
   return {
     name: faker.person.fullName(),
     email: faker.internet.email(),
-    password: faker.internet.password(),
+    password: '12345678',
     role: faker.helpers.arrayElement([Role.COACH, Role.ADMIN,Role.STUDENT]),
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),

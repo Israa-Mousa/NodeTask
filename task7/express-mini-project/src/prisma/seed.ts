@@ -6,21 +6,21 @@ import { PrismaClient } from '../src/generated/prisma';
 
 import { createRandomUser } from "../seeds/user.seed";
 import { createRandomCourse } from "../seeds/course.seed";
+  console.log("Old data deleted.");
 
 const prisma = new PrismaClient();
+  console.log("Old data deleted.");
 
 async function main() {
-  // مسح البيانات القديمة
+ 
   await prisma.course.deleteMany({});
   await prisma.user.deleteMany({});
-
-  // إنشاء 10 مستخدمين
+  console.log("Old data deleted.");
   const users = Array.from({ length: 10 }).map(() => createRandomUser());
 
   for (const user of users) {
     const createdUser = await prisma.user.create({ data: user });
 
-    // لكل مستخدم، إنشاء 3-5 كورسات
     const courseCount = faker.number.int({ min: 3, max: 5 });
     for (let i = 0; i < courseCount; i++) {
       const courseData = createRandomCourse(createdUser.id);
