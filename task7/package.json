@@ -14,8 +14,10 @@
   "license": "ISC",
   "description": "Express + TypeScript modular API project",
   "dependencies": {
+    "@prisma/client": "^6.16.3",
     "@types/express-session": "^1.18.2",
     "argon2": "^0.44.0",
+    "client": "^0.0.1",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
@@ -29,6 +31,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.3.0",
+    "prisma": "^6.16.3",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }

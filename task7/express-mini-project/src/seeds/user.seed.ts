@@ -1,15 +1,14 @@
 import { faker } from "@faker-js/faker";
-import { User } from "../users/user.entity";
-import { Role } from "../users/role.enum";
+import { User, Role } from "../../../src/generated/prisma";
 
-export function createRandomUser(role: Role): User {
+export function createRandomUser(): Omit<User, 'id'> {
   return {
-    id: faker.string.uuid(),  // التأكد من أن UUID يتم توليده بشكل صحيح
     name: faker.person.fullName(),
     email: faker.internet.email(),
     password: faker.internet.password(),
-    role,  // استخدام role الذي تم تمريره
-    createdAt: faker.date.past(),  // تأكد من أن createdAt و updatedAt هما من نوع Date
+    role: faker.helpers.arrayElement([Role.COACH, Role.ADMIN,Role.STUDENT]),
+    createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
   };
 }
+

@@ -1,16 +1,13 @@
 import { faker } from '@faker-js/faker';
-import { Course } from '../../src/courses/course.entity';
-
-export function createRandomCourse(userId?: string): Course {
+import { Course } from '../../../src/generated/prisma';
+export function createRandomCourse(userId: string): Omit<Course, 'id' | 'user'> {
   return {
-   id: faker.string.uuid(),
-    title: faker.lorem.words(3),      // ✅ Already a string
-    description: faker.lorem.sentences(2), // ✅ Pass number of sentences
-    createdBy: userId || faker.string.uuid(),
+    title: faker.lorem.words(3),
+    description: faker.lorem.sentences(2),
     image: `course${faker.number.int({ min: 1, max: 5 })}.jpg`,
+    createdBy: userId,
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
-
-  }
+  };
 }
 

@@ -30,18 +30,18 @@ describe("Course Routes", () => {
       title: faker.lorem.words(3),
       description: faker.lorem.sentence({ min: 5, max: 10 }),
       image: "course.jpg",
-      createdBy: clients.users.coachUser.id,  // استخدم معرّف المدرب من الـ clients
+      createdBy: clients.users.coachUser.id,  
     };
 
     const res = await clients.authedClient.post("/api/v1/courses").send(newCourse);
-    expect(res.status).toBe(201);  // التحقق من أن الكود هو 201 (تم الإنشاء)
+    expect(res.status).toBe(201);  
     expect(res.body.data).toMatchObject({
       title: newCourse.title,
       description: newCourse.description,
       createdBy: newCourse.createdBy,
     });
 
-    createdCourse = res.body.data;  // حفظ الكورس الذي تم إنشاؤه
+    createdCourse = res.body.data;  
   });
 
   it("STUDENT cannot create a course", async () => {
@@ -51,7 +51,7 @@ describe("Course Routes", () => {
       image: "fail.jpg",
       createdBy: clients.users.studentUser.id,
     });
-    expect(res.status).toBe(403);  // التحقق من أن الاستجابة هي 403 (غير مسموح)
+    expect(res.status).toBe(403);  
   });
 
   it("Validation error when missing fields", async () => {

@@ -1,182 +1,72 @@
+import { prisma } from 'src/prisma/service/prisma.service';
 import { createArgonHash } from '../shared/utils/argon.utils';
 import { Role } from './role.enum';
-import { User } from './user.entity';
-import {userData}  from './user.data'; 
+import { User } from '../../../src/generated/prisma';
+// import { prisma } from '../prisma/service/prisma.service';
 export class UserRepository {
-   
-  private users: User[] = [];
-  private idCounter = 1;
-constructor(userDb: User[] = userData) { 
-    this.users = userDb;
-    this.idCounter = userDb.length + 1;
-  }
-  //     this.users = users;
-  //     this.idCounter = users.length + 1;
-  //   }).catch((err) => {
-  //     console.error('Failed to load initial users:', err);
-  //   });
-  // }
-  // constructor(userDb:Promise<User[]>=userData) {
-  //  this.users  =userDb;
-  // }
-  // async init() {
-  //   this.users = [
-  //     {
-  //       id: '1',
-  //       name: 'Admin',
-  //       email: 'admin@no.com',
-  //       password: await createArgonHash('12345678'),
-  //       role: Role.ADMIN,
-  //       createdAt: new Date('2025-01-01T10:00:00Z'),
-  //       updatedAt: new Date('2025-01-01T10:00:00Z'),
-  //     },
-  //     {
-  //       id: '2',
-  //       name: 'Belal',
-  //       email: 'belal@example.com',
-  //       password: await createArgonHash('12345678'),
-  //       role: Role.COACH,
-  //       createdAt: new Date('2025-03-01T14:30:00Z'),
-  //       updatedAt: new Date('2025-03-01T14:30:00Z'),
-  //     },
-  //     {
-  //       id: '3',
-  //       name: 'israa',
-  //       email: 'isra@gmail.com',
-  //       password: await createArgonHash('12345678'),
-  //       role: Role.STUDENT,
-  //       createdAt: new Date('2025-02-01T12:00:00Z'),
-  //       updatedAt: new Date('2025-02-01T12:00:00Z'),
-  //     },
-  //   ];
-  //   this.idCounter = this.users.length + 1;
-  // }
 
-
-  //  constructor(userDb: Promise<User[]> = userData) {
-  //   // Wait for the promise to resolve
-  //   userDb.then((users) => {
-  //     this.users = users;
-  //     this.idCounter = users.length + 1;
-  //   }).catch((err) => {
-  //     console.error('Failed to load initial users:', err);
-  //   });
-  // }
-  // constructor(userDb:Promise<User[]>=userData) {
-
-  //  this.users  =userDb;
-  // }
-  // async init() {
-  //   this.users = [
-  //     {
-  //       id: '1',
-  //       name: 'Admin',
-  //       email: 'admin@no.com',
-  //       password: await createArgonHash('12345678'),
-  //       role: Role.ADMIN,
-  //       createdAt: new Date('2025-01-01T10:00:00Z'),
-  //       updatedAt: new Date('2025-01-01T10:00:00Z'),
-  //     },
-  //     {
-  //       id: '2',
-  //       name: 'Belal',
-  //       email: 'belal@example.com',
-  //       password: await createArgonHash('12345678'),
-  //       role: Role.COACH,
-  //       createdAt: new Date('2025-03-01T14:30:00Z'),
-  //       updatedAt: new Date('2025-03-01T14:30:00Z'),
-  //     },
-  //     {
-  //       id: '3',
-  //       name: 'israa',
-  //       email: 'isra@gmail.com',
-  //       password: await createArgonHash('12345678'),
-  //       role: Role.STUDENT,
-  //       createdAt: new Date('2025-02-01T12:00:00Z'),
-  //       updatedAt: new Date('2025-02-01T12:00:00Z'),
-  //     },
-  //   ];
-
-  //   this.idCounter = this.users.length + 1;
-  // }
-
-  findAll(): User[] {
-    return this.users;
+  private prismaUser=prisma.user;
+  async findAll(): Promise<User[]> {
+    return this.prismaUser.findMany();
   }
 
-  findById(id: string): User | undefined {
-    return this.users.find((user) => user.id === id);
+  async findById(id: string): Promise<User | null> {
+    return this.prismaUser.findUnique({
+      where: { id: id },
+    });
   }
 
-  findByEmail(email: string): User | undefined {
-    return this.users.find((user) => user.email === email);
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prismaUser.findUnique({
+      where: { email },
+    });
   }
-  // دالة لحفظ مستخدم (إما تحديث أو إضافة)
-  async save(user: User): Promise<User> {
-    // إذا كان المستخدم موجوداً بالفعل في المصفوفة بناءً على ID
-    const existingUser = this.findById(user.id);
-    
-    if (existingUser) {
-      // إذا كان موجوداً، نقوم بتحديث بياناته
-      existingUser.name = user.name;
-      existingUser.email = user.email;
-      existingUser.role = user.role;
-      existingUser.updatedAt = new Date();
-    //  console.log('Updated user:', existingUser);
-      return existingUser;
-    } else {
-      // إذا لم يكن موجوداً، نقوم بإنشاء مستخدم جديد
-      this.users.push(user);
-   //   console.log('Created new user:', user);
-      return user;
-    }
-  }
+
   async create(
     name: string,
     email: string,
     originalPassword: string,
     role: Role
   ): Promise<User> {
-    const password = await createArgonHash(originalPassword); 
-    const user: User = {
-      id: this.idCounter.toString(),
-      name,
-      email,
-      password,
-      role,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this.idCounter++;
-    this.users.push(user);
-    console.log('Created user:', user);
-    return user;
+    const password = await createArgonHash(originalPassword);
+    return this.prismaUser.create({
+      data: {
+        name,
+        email,
+        password,
+        role,
+      },
+    });
   }
 
-  update(
+  async update(
     id: string,
     name?: string,
     email?: string,
     role?: Role
-  ): User | null {
-    const user = this.findById(id);
-    if (!user) return null;
-
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (role) user.role = role;
-    user.updatedAt = new Date();
-
-    return user;
+  ): Promise<User | null> {
+    try {
+      return this.prismaUser.update({
+        where: { id: Number(id) },
+        data: {
+          name,
+          email,
+          role,
+          updatedAt: new Date(),
+        },
+      });
+    } catch (err) {
+      return null; // لو ID مش موجود
+    }
   }
 
-  delete(id: string): boolean {
-    const index = this.users.findIndex((user) => user.id === id);
-    if (index === -1) return false;
-
-    this.users.splice(index, 1);
-    return true;
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prismaUser.delete({ where: { id: Number(id) } });
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 
