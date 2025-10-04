@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { int, z } from 'zod';
 
 export const CreateCourseDTOSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters long'),
@@ -10,7 +10,7 @@ export const CreateCourseDTOSchema = z.object({
 export const UpdateCourseDTOSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters long').optional(),
   description: z.string().min(10, 'Description must be at least 10 characters long').optional(),
-  createdBy: z.string().optional(),
+  createdBy: int(),
   image: z.string().optional(),
 }).strict();
 

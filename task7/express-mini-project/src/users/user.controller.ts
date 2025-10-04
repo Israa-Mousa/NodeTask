@@ -23,11 +23,15 @@ export class UserController {
   };
 
   getUser =async (req: Request<{ id: string }>, res: Response) => {
+          console.log("cccccc");
+
    try {
       const id = req.params.id;
+      console.log("cccccc"+typeof id);
+
       if (!id) return res.status(400).json({ error: 'ID required' });
 
-      const user = await this._userService.getUser(id);
+      const user = await this._userService.getUser(Number(id));
       if (!user) {
         throw new CustomError('User not found', 'USER', 404);
       }
@@ -63,7 +67,7 @@ export class UserController {
       const id = req.params.id;
       if (!id) return res.status(400).json({ error: 'ID required' });
 
-      const deleted = await this._userService.deleteUser(id);
+      const deleted = await this._userService.deleteUser(Number(id));
       if (!deleted) {
         throw new CustomError('User not found', 'USER', 404);
       }
@@ -76,6 +80,8 @@ export class UserController {
  getCurrentUser = (req: Request, res: Response) => {
  try {
       const user = req.user;  
+            console.log("cccccc");
+
       if (!user) {
         throw new CustomError('User does not exist', 'USER', 404);  
       }

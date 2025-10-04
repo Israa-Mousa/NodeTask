@@ -23,6 +23,7 @@ export const RegisterDTOSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   role: z.nativeEnum(Role).default(Role.STUDENT), 
+  // role: z.literal(Role.STUDENT).default(Role.STUDENT)
 });
 
 export const UpdateUserDTOSchema = z.object({

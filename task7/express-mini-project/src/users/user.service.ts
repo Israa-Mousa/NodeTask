@@ -7,56 +7,50 @@ import { UpdateUserDTO } from "./user.dto";
 import { removeFields } from "../shared/utils/object.util";
 
 class UserService {
-  getUsers(page: number, limit: number): User[] {
-    return userRepository.findAll().slice((page - 1) * limit, page * limit);
+  async getUsers(page: number, limit: number): Promise<User[]> {
+    return (await userRepository.findAll()).slice((page - 1) * limit, page * limit);
   }
 
-  getUser(id: string): User | undefined {
-    return userRepository.findById(id);
-  }
+async getUser(id: number): Promise<Omit<User, "password">> {
+      console.log("ssssssssssssssss"+typeof id);
 
-   findByEmail(email:string){
-    return  userRepository.findByEmail(email);
-  }
+  const user = await userRepository.findById(id);
+  if (!user) throw new CustomError("User not found", "USER", 404);
+  const { password, ...rest } = user;
+  return rest;
+}
 
- async updateUser(id: string, updateData: UpdateUserDTO): Promise<User | undefined> {
-    const user = userRepository.findById(id);
-    if (!user) {
-      throw new CustomError('User not found', 'USER', 404);
-    }
 
-    //const userRole = Role[updateData.role as keyof typeof Role] || user.role;
-   // const updatedUser = await userRepository.update(id, updateData.email || user.email, updateData.name || user.name, userRole);
-       const updatedUser = await userRepository.update(id, updateData.email || user.email, updateData.name || user.name);
+async findByEmail(email: string): Promise<User | null> {
+  return await userRepository.findByEmail(email);
+}
 
-    if (!updatedUser) {
-      throw new CustomError('Failed to update user', 'USER', 500);
-    }
-    return updatedUser;
-  }
-  async createUser(
+async findById(id: number): Promise<User | null> {
+  return await userRepository.findById(id);
+}
+async updateUser(id: number, updateData: UpdateUserDTO): Promise<Omit<User, "password">> {
+  const updatedUser = await userRepository.update(
+    id,
+    updateData.name,
+    updateData.email,
+  );
+  if (!updatedUser) throw new CustomError("User not found or failed to update", "USER", 404);
+  const { password, ...rest } = updatedUser;
+  return rest;
+}
+
+async createUser(
   name: string,
   email: string,
   password: string,
   role: string = "STUDENT"
-): Promise<Omit<User, 'password'>> {
+): Promise<Omit<User, "password">> {
   const userRole = Role[role as keyof typeof Role] || Role.STUDENT;
-  const newUser: User = {
-    id: (userRepository.findAll().length + 1).toString(),
-    name,
-    email,
-    password,  
-    role: userRole,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
-  const savedUser = await userRepository.create(name, email, password, userRole);
-
+  const savedUser = await userRepository.create(name, email, password,userRole);
   const { password: _, ...userWithoutPassword } = savedUser;
-  console.log('Created user without password:', userWithoutPassword);
   return userWithoutPassword;
 }
+
 
 
   // async createUser(name: string, email: string, password: string, role: string = "STUDENT"): Promise<User> {
@@ -75,18 +69,14 @@ class UserService {
     
   // }
 
-  deleteUser(id: string): boolean {
+ deleteUser(id: number) {
     return userRepository.delete(id);
   }
-    isUserIdExist(id:string):boolean{
-      
-      console.log('Checking if user exists with ID:', id);
-   return !! userRepository.findById(id);
-  }
-  
-  public async findById(id: string) {
-  return userRepository.findById(id);
+  async isUserIdExist(id: number): Promise<boolean> {
+  const user = await userRepository.findById(id);
+  return !!user;
 }
+
 
 }
 

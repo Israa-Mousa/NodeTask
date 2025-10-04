@@ -2,12 +2,19 @@
 import { string } from 'zod';
 import { Course } from '../src/generated/prisma';
 import { prisma } from '../prisma/service/prisma.service';
+import { Prisma } from '../src/generated/prisma';
+
 export class CourseRepository {
 
    private prismaCourse=prisma.course;
-  findAll():Promise< Course[]> {
+  // findAll():Promise< Course[]> {
+  //   return this.prismaCourse.findMany({
+  //      //where: query
+  //   });
+  // }
+  findAll(query: Prisma.CourseFindManyArgs['where']) {
     return this.prismaCourse.findMany({
-       //where: query
+      where: query
     });
   }
 

@@ -14,46 +14,57 @@ export class AuthController {
   private authService = new AuthService();
 
 
-   public async register(
-    req:Request<StringObject,RegisterDTO>,
-    res:Response<RegisterResponseDTO| string>,
-    next:NextFunction
-  ){
-    //only student can register
-      try {
-    const payloadData=zodValidation(registerDTOSchema,req.body,'AUTH');
-    console.log('Validated payload:', payloadData);
-    const userData = await this.authService.register(payloadData);
-   // const userWithoutPassword = removeFields(userData, ['password']);
+  public async register(
+    req: Request<{}, {}, RegisterDTO>,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const payloadData = zodValidation(registerDTOSchema, req.body, "AUTH");
+      const userData = await this.authService.register(payloadData);
 
-     res.create(userData);
-   } 
-    catch (error) { 
-        return new CustomError.handleError(error,res,next,MODULES_NAMES.auth);
+      // إرسال النتيجة بدون كلمة المرور
+      res.status(201).json(userData);
+    } catch (error: any) {
+      console.error(`[${MODULES_NAMES.auth}] Register error:`, error);
+      res.status(error?.status || 500).json({
+        message: error?.message || "Internal Server Error",
+      });
     }
-} 
- 
-
-    //we user jwt to login
-    public async login(req:Request<StringObject,StringObject,LoginDTO>,
-    res:Response<LoginResponseDTO | string>){
-    const payloadData=zodValidation(loginDTOSchema,req.body,'AUTH');
-   
-   const userData=await this.authService.login(payloadData);
-   if(!userData){
-    res.status(HttpErrorStatus.BadRequest).
-    send("Invalid credentials");
-    return ;
-   } 
-const token=signJwt({sub:userData.id,name:userData.name});
-   //res.json({data:userData,token});
-   res.ok({user:userData,token});
   }
 
+  public async login(
+    req: Request<{}, {}, LoginDTO>,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const payloadData = zodValidation(loginDTOSchema, req.body, "AUTH");
 
-   public logout(req:Request,res:Response,next:NextFunction){
-  res.ok({})
+      const userData = await this.authService.login(payloadData);
+
+      if (!userData) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      const token = signJwt({
+        sub: String(userData.id),
+        name: userData.name,
+        // role: userData.role,
+      });
+
+      res.status(200).json({ user: userData, token });
+    } catch (error: any) {
+      console.error(`[${MODULES_NAMES.auth}] Login error:`, error);
+      res.status(error?.status || 500).json({
+        message: error?.message || "Internal Server Error",
+      });
+    }
+  }
+
+  public logout(req: Request, res: Response, next: NextFunction) {
+    res.status(200).json({ message: "Logged out successfully" });
+  }
 }
 
-}
-export const authController=new AuthController();
+export const authController = new AuthController();

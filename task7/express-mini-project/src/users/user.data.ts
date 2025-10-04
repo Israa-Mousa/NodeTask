@@ -3,11 +3,11 @@ import { Role } from './role.enum';
 import { createArgonHash } from '../shared/utils/argon.utils';
 import { createRandomUser } from '../seeds/user.seed';
 export const userData: User[] = [
-  createRandomUser(Role.ADMIN),
-  createRandomUser(Role.COACH),
-  createRandomUser(Role.STUDENT),
+  // createRandomUser(Role.ADMIN),
+  // createRandomUser(Role.COACH),
+  // createRandomUser(Role.STUDENT),
 ]
-  console.log("xxxxxxxxxxx"+userData)
+  // console.log("xxxxxxxxxxx"+userData)
 
 // export const getUserData = async (): Promise<User[]> => [
 //   {

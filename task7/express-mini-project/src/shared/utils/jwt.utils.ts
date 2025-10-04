@@ -12,7 +12,8 @@ if (!JWT_SECRET) {
 // إنشاء نوع مخصص للـ payload
 export interface JwtCustomPayload {
   sub: string; // user ID
-  role: string; // مثلا role مثل admin, user، الخ
+  // role: string; // مثلا role مثل admin, user، الخ
+  name: string; // اسم المستخدم
 }
 
 export const signJwt = (payload: JwtCustomPayload, options?: SignOptions) => {

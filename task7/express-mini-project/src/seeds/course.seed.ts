@@ -7,7 +7,7 @@ export function createRandomCourse(userId: number): Omit<Course, 'id' | 'creator
     title: faker.lorem.words(3),
     description: faker.lorem.sentences(2),
     image: `course${faker.number.int({ min: 1, max: 5 })}.jpg`,
-    createdBy: userId, // ✅ هذا صح
+    createdBy: userId,
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
   };

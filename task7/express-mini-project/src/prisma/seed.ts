@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 
 // import { PrismaClient} from '../src/generated/prisma';
 // import { PrismaClient } from '../../../src/generated/prisma';
-import { PrismaClient } from '../src/generated/prisma';
+import { PrismaClient, User } from '../src/generated/prisma';
 
 import { createRandomUser } from "../seeds/user.seed";
 import { createRandomCourse } from "../seeds/course.seed";
@@ -16,8 +16,12 @@ async function main() {
   await prisma.course.deleteMany({});
   await prisma.user.deleteMany({});
   console.log("Old data deleted.");
-  const users = Array.from({ length: 10 }).map(() => createRandomUser());
-
+  // const users = Array.from({ length: 10 }).map(() => createRandomUser());
+const users: Omit<User, 'id'>[] = [];
+for (let i = 0; i < 10; i++) {
+  const user = await createRandomUser(); // 👈 await هنا
+  users.push(user);
+}
   for (const user of users) {
     const createdUser = await prisma.user.create({ data: user });
 
