@@ -3,7 +3,7 @@ import { User } from  './user.entity';
 import { Role } from './role.enum';
 
 export const userSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   name: z.string(),
   email: z.string(),
   createdAt: z.date(),

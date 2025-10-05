@@ -7,9 +7,14 @@ import { UpdateUserDTO } from "./user.dto";
 import { removeFields } from "../shared/utils/object.util";
 
 class UserService {
+  // async getUsers(page: number, limit: number): Promise<User[]> {
+  //   return (await userRepository.findAll()).slice((page - 1) * limit, page * limit);
+  // }
   async getUsers(page: number, limit: number): Promise<User[]> {
-    return (await userRepository.findAll()).slice((page - 1) * limit, page * limit);
-  }
+  const allUsers = await userRepository.findAll(); // await هنا
+  return allUsers.slice((page - 1) * limit, page * limit);
+}
+
 
 async getUser(id: number): Promise<Omit<User, "password">> {
       console.log("ssssssssssssssss"+typeof id);
@@ -29,6 +34,7 @@ async findById(id: number): Promise<User | null> {
   return await userRepository.findById(id);
 }
 async updateUser(id: number, updateData: UpdateUserDTO): Promise<Omit<User, "password">> {
+   
   const updatedUser = await userRepository.update(
     id,
     updateData.name,

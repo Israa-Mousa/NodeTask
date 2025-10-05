@@ -7,20 +7,35 @@ import { zodValidation } from '../shared/utils/zod.utill';
 export class UserController {
   private _userService = userService;
 
-  getUsers = (
-    req: Request<{}, {}, {}, { page: string; limit: string }>,
-    res: Response
-  ) => {
-        try {
-      const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;
-      const users = this._userService.getUsers(page, limit);
-      res.ok(users);
-    } catch (error) {
- handleError(error, res);  
-  }
+//   getUsers = (
+//     req: Request<{}, {}, {}, { page: string; limit: string }>,
+//     res: Response
+//   ) => {
+//         try {
+//       const page = Number(req.query.page) || 1;
+//       const limit = Number(req.query.limit) || 10;
+//       const users = this._userService.getUsers(page, limit);
+//       res.ok(users);
+//     } catch (error) {
+//  handleError(error, res);  
+//   }
   
-  };
+//   };
+
+  getUsers = async (
+  req: Request<{}, {}, {}, { page: string; limit: string }>,
+  res: Response
+) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const users = await this._userService.getUsers(page, limit); 
+    res.ok(users);
+  } catch (error) {
+    handleError(error, res);  
+  }
+};
+
 
   getUser =async (req: Request<{ id: string }>, res: Response) => {
           console.log("cccccc");

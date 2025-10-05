@@ -10,7 +10,7 @@ export const CreateCourseDTOSchema = z.object({
 export const UpdateCourseDTOSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters long').optional(),
   description: z.string().min(10, 'Description must be at least 10 characters long').optional(),
-  createdBy: int(),
+  createdBy:  z.coerce.number().int().optional(),
   image: z.string().optional(),
 }).strict();
 

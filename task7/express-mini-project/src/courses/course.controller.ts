@@ -8,20 +8,20 @@ import { userService } from '../users/user.service';
 export class CourseController {
   private _courseService = courseService;
 
-  getCourses = (req: Request, res: Response, next: NextFunction) => {
+  getCourses = async(req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
-      const courses = this._courseService.getCourses(page, limit);
+      const courses = await  this._courseService.getCourses(page, limit);
       res.ok(courses);
     } catch (error) {
       handleError(error, res);
     }
   };
 
-  getCourse = (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+  getCourse = async(req: Request<{ id: string }>, res: Response, next: NextFunction) => {
     try {
-      const course = this._courseService.getCourse(req.params.id);
+      const course =await this._courseService.getCourse(Number(req.params.id));
       if (!course) {
         throw new CustomError('Course not found', 'COURSE', 404);
       }
@@ -46,8 +46,8 @@ export class CourseController {
       console.log('Image for new course:', image);
       const createdBy = req.user?.id || '';
      console.log('User creating course:', createdBy);
-      const newCourse = await this._courseService.createCourse(title, description, createdBy, image);
-      const creator = await userService.findById(createdBy);
+      const newCourse = await this._courseService.createCourse(title, description,Number(createdBy), image);
+      const creator = await userService.findById(Number(createdBy));
 
     const response = {
       ...newCourse,
@@ -64,21 +64,26 @@ export class CourseController {
 
 updateCourse = async (req: Request, res: Response, next: NextFunction) => {
   try {
+         console.log(' update data:' ,req.user);
+
     const parsed = zodValidation(UpdateCourseDTOSchema, req.body, 'COURSE');
      console.log('Parsed update data:', parsed);
     const { title, description } = parsed;
 
     const courseId = req.params.id;
+
     if (!courseId) {
       return res.status(400).json({ error: 'Course ID is required' });
     }
 
     const existingCourse = await courseService.findById(courseId);
+      console.log('Existing course:', existingCourse);
     if (!existingCourse) {
       throw new CustomError('Course not found', 'COURSE', 404);
     }
 
     const user = req.user;
+    
     if (!user) {
       throw new CustomError('Unauthorized', 'AUTH', 401);
     }
@@ -88,7 +93,7 @@ updateCourse = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     
-    const image = req.file ? req.file.filename : existingCourse.image;
+    const image = req.file ? req.file.filename : existingCourse.image?? undefined;
       console.log('Image for update:', image);
     const updatedCourse = await courseService.updateCourse(courseId, {
       title,

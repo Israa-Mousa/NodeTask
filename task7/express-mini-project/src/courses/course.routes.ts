@@ -17,14 +17,15 @@ const authenticateAndCheckRole = [isAuthenticated, uploadMiddleware, checkRole([
 // GET جميع الكورسات
 router.get(
   '/',
-  checkRole(['STUDENT', 'ADMIN', 'COACH']),
+  // isAuthenticated,
   courseController.getCourses
 );
 
-// GET كورس حسب id
+// GET كورس حسب id بالبيك اي حد بقدر يشوفه مش شرط يكون مسجل دخول
 router.get(
   '/:id',
-  checkRole(['STUDENT', 'ADMIN', 'COACH']),
+  // isAuthenticated,     
+  // checkRole(['STUDENT', 'ADMIN', 'COACH']),
   courseController.getCourse
 );
 

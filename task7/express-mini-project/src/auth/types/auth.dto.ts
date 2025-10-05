@@ -14,7 +14,7 @@ export type RegisterDTO = {
   email: string;
   password: string;
   name: string;
-  role: string;
+  role: string | undefined;
 };
 
 // Register Response DTO (returns user data without password)

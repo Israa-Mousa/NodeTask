@@ -21,9 +21,10 @@ export class AuthController {
   ) {
     try {
       const payloadData = zodValidation(registerDTOSchema, req.body, "AUTH");
+      
       const userData = await this.authService.register(payloadData);
 
-      // إرسال النتيجة بدون كلمة المرور
+   
       res.status(201).json(userData);
     } catch (error: any) {
       console.error(`[${MODULES_NAMES.auth}] Register error:`, error);

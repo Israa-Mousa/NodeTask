@@ -45,6 +45,7 @@ class CourseService {
   }
     public async findById(id: string): Promise<Course | null> {
     const course = await courseRepository.findById(Number(id));
+    console.log('Course found by ID:', course);
     if (!course) return null;
     return course;
   }

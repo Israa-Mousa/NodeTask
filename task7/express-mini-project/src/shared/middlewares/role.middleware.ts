@@ -3,6 +3,7 @@ import { CustomError } from '../utils/exception';
 export const checkRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
+    // console.log('User in checkRole middleware:', user);
     if (!user) {
       return next(new CustomError('User not authenticated', 'AUTH', 401));
     }

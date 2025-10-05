@@ -5,12 +5,17 @@ import { userService } from '../users/user.service';
 import { createArgonHash, verifyArgonHash } from '../shared/utils/argon.utils';
 import { removeFields } from '../shared/utils/object.util';
 import is from 'zod/v4/locales/is.js';
+import { CustomError } from 'src/shared/utils/exception';
 export class AuthService {
   private _userService = userService;
   
  public async register(
   payload: RegisterDTO): Promise<RegisterResponseDTO> {
 
+     const existingUser = await this._userService.findByEmail(payload.email);
+  if (existingUser) {
+    throw new CustomError("Email already in use", "AUTH", 400);
+  }
     const userData = this._userService.createUser(
       payload.name,
       payload.email,
