@@ -1,7 +1,4 @@
 import { faker } from '@faker-js/faker';
-
-// import { PrismaClient} from '../src/generated/prisma';
-// import { PrismaClient } from '../../../src/generated/prisma';
 import { PrismaClient, User } from '../src/generated/prisma';
 
 import { createRandomUser } from "../seeds/user.seed";
@@ -19,7 +16,7 @@ async function main() {
   // const users = Array.from({ length: 10 }).map(() => createRandomUser());
 const users: Omit<User, 'id'>[] = [];
 for (let i = 0; i < 10; i++) {
-  const user = await createRandomUser(); // 👈 await هنا
+  const user = await createRandomUser(); 
   users.push(user);
 }
   for (const user of users) {
