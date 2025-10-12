@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.16.3
- * Query Engine version: bb420e667c1820a8c05a38023385f6cc7ef8e83a
+ * Prisma Client JS version: 6.17.0
+ * Query Engine version: c0aafc03b8ef6cdced8654b9a817999e02457d6a
  */
 Prisma.prismaVersion = {
-  client: "6.16.3",
-  engine: "bb420e667c1820a8c05a38023385f6cc7ef8e83a"
+  client: "6.17.0",
+  engine: "c0aafc03b8ef6cdced8654b9a817999e02457d6a"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -154,7 +154,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\IT USER\\Documents\\GitHub\\NodeTask\\task7\\express-mini-project\\src\\src\\generated\\prisma",
+      "value": "C:\\Users\\israa mazar3a\\Documents\\GitHub\\Node\\task7\\express-mini-project\\src\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -168,15 +168,16 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\IT USER\\Documents\\GitHub\\NodeTask\\task7\\express-mini-project\\src\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\israa mazar3a\\Documents\\GitHub\\Node\\task7\\express-mini-project\\src\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
-  "clientVersion": "6.16.3",
-  "engineVersion": "bb420e667c1820a8c05a38023385f6cc7ef8e83a",
+  "clientVersion": "6.17.0",
+  "engineVersion": "c0aafc03b8ef6cdced8654b9a817999e02457d6a",
   "datasourceNames": [
     "db"
   ],
