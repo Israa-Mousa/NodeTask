@@ -14,7 +14,11 @@
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "seed:mongo:users": "tsx src/seeds/mongo-seed.ts",
+    "seed:mongo:courses": "tsx src/seeds/course-mongo-seed.ts",
+    "seed:mongo": "npm run seed:mongo:users && npm run seed:mongo:courses",
+    "seed:prisma": "ts-node src/prisma/seed.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

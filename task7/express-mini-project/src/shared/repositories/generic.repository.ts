@@ -1,3 +1,4 @@
+//this is for  fro memery database entity
 export interface DatabaseEntity  {
   id: string;
   createdAt: Date;

@@ -1,51 +1,46 @@
 import { Course } from './course.entity';
 import { CustomError } from '../shared/utils/exception';
-import { courseRepository } from './course.repsitory';
 import { CreateCourseDTO, UpdateCourseDTO } from './course.dto';
+import { CourseRepositoryI } from './interfaces/course-repo-interface';
+import { courseMongoRepository } from './course-mongo-repository';
 
 class CourseService {
-  // async public getCourses(page: number, limit: number): Course[] {
-  // //  return courseRepository.findAll().slice((page - 1) * limit, page * limit);
-  //    return courseRepository.findAll({});
+  constructor(private courseRepo: CourseRepositoryI = courseMongoRepository) {}
 
-  // }
-
-    getCourses(page: number, limit: number):Promise< Course[]> {
-   return courseRepository.findAll({});
- 
+  getCourses(page: number = 1, limit: number = 10): Promise<Course[]> {
+    return this.courseRepo.findAll();
   }
 
-   public getCourse(id: number){
-    return courseRepository.findById(id);
+  getCourse(id: number | string) {
+    return this.courseRepo.findById(id);
   }
 
-  public  createCourse(
+  createCourse(
     title: string,
     description: string,
-    createdBy: number,
-    image: string
-  )
-      {
-    return courseRepository.create(title, description, createdBy, image);
+    createdBy: number | string,
+    image?: string
+  ) {
+    return this.courseRepo.create(title, description, createdBy, image);
   }
 
- public  updateCourse(
-    id: string,
+  async updateCourse(
+    id: number | string,
     updateData: Partial<UpdateCourseDTO>
-  ){
-    const course =  courseRepository.findById(Number(id));
+  ) {
+    const course = await this.courseRepo.findById(id);
     if (!course) {
       throw new CustomError("Course not found", "COURSE", 404);
     }
-    return courseRepository.update(Number(id), updateData); 
+    return this.courseRepo.update(id, updateData);
   }
 
-   public  deleteCourse(id: string) {
-    return courseRepository.delete(Number(id));
+  deleteCourse(id: number | string) {
+    return this.courseRepo.delete(id);
   }
-    public async findById(id: string): Promise<Course | null> {
-    const course = await courseRepository.findById(Number(id));
-    console.log('Course found by ID:', course);
+
+  async findById(id: number | string): Promise<Course | null> {
+    const course = await this.courseRepo.findById(id);
     if (!course) return null;
     return course;
   }

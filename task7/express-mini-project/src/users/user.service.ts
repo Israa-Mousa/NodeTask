@@ -1,49 +1,28 @@
 import { User } from "./user.entity";
 import { Role } from "./role.enum";
-import { userRepository } from "./user.repsitory";
-import argon2 from "argon2";
 import { CustomError } from "../shared/utils/exception";
 import { UpdateUserDTO } from "./user.dto";
-import { removeFields } from "../shared/utils/object.util";
+import { UserRepositoryI } from "./interfaces/user-repo-interface";
+import { userMongoRepository } from "./user-mongo-repository";
 
 class UserService {
-  // async getUsers(page: number, limit: number): Promise<User[]> {
-  //   return (await userRepository.findAll()).slice((page - 1) * limit, page * limit);
-  // }
-  async getUsers(page: number, limit: number): Promise<User[]> {
-  const allUsers = await userRepository.findAll(); // await هنا
-  return allUsers.slice((page - 1) * limit, page * limit);
-}
+  constructor(private userRepo: UserRepositoryI = userMongoRepository) {}
 
+  getUsers(page = 1, limit = 10) {
+    return this.userRepo.findAll(page, limit);
+  }
 
-async getUser(id: number): Promise<Omit<User, "password">> {
-      console.log("ssssssssssssssss"+typeof id);
+  async getUser(id: number | string) {
+    return this.userRepo.findById(id);
+  }
 
-  const user = await userRepository.findById(id);
-  if (!user) throw new CustomError("User not found", "USER", 404);
-  const { password, ...rest } = user;
-  return rest;
-}
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepo.findByEmail(email);
+  }
 
-
-async findByEmail(email: string): Promise<User | null> {
-  return await userRepository.findByEmail(email);
-}
-
-async findById(id: number): Promise<User | null> {
-  return await userRepository.findById(id);
-}
-async updateUser(id: number, updateData: UpdateUserDTO): Promise<Omit<User, "password">> {
-   
-  const updatedUser = await userRepository.update(
-    id,
-    updateData.name,
-    updateData.email,
-  );
-  if (!updatedUser) throw new CustomError("User not found or failed to update", "USER", 404);
-  const { password, ...rest } = updatedUser;
-  return rest;
-}
+  async updateUser(id: number | string, updateData: UpdateUserDTO) {
+    return this.userRepo.update(id, updateData.name, updateData.email);
+  }
 
 async createUser(
   name: string,
@@ -52,34 +31,22 @@ async createUser(
   role: string = "STUDENT"
 ): Promise<Omit<User, "password">> {
   const userRole = Role[role as keyof typeof Role] || Role.STUDENT;
-  const savedUser = await userRepository.create(name, email, password,userRole);
-  const { password: _, ...userWithoutPassword } = savedUser;
-  return userWithoutPassword;
+  const savedUser = await this.userRepo.create(name, email, password, userRole);
+  
+  // Convert to plain object if it's a Mongoose document
+  const userPlain = typeof savedUser.toJSON === 'function' ? savedUser.toJSON() : savedUser;
+  
+  // Remove password field
+  const { password: _, ...userWithoutPassword } = userPlain as any;
+  return userWithoutPassword as Omit<User, "password">;
 }
 
-
-
-  // async createUser(name: string, email: string, password: string, role: string = "STUDENT"): Promise<User> {
-  //   const userRole = Role[role as keyof typeof Role] || Role.STUDENT;
-  //   const newUser: User = {
-  //     id: (userRepository.findAll().length + 1).toString(),
-  //     name,
-  //     email,
-  //     password,
-  //     role: userRole,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //   };
-  //    console.log('Creating user with data:', newUser);
-  //   return  userRepository.create( name,email,password,userRole);
-    
-  // }
-
- deleteUser(id: number) {
-    return userRepository.delete(id);
+deleteUser(id: number | string) {
+    return this.userRepo.delete(id);
   }
-  async isUserIdExist(id: number): Promise<boolean> {
-  const user = await userRepository.findById(id);
+  
+async isUserIdExist(id: number | string): Promise<boolean> {
+  const user = await this.userRepo.findById(id);
   return !!user;
 }
 

@@ -4,8 +4,7 @@ import { User } from '../users/user.entity';
 import { userService } from '../users/user.service';
 import { createArgonHash, verifyArgonHash } from '../shared/utils/argon.utils';
 import { removeFields } from '../shared/utils/object.util';
-import is from 'zod/v4/locales/is.js';
-import { CustomError } from 'src/shared/utils/exception';
+import { CustomError } from '../shared/utils/exception';
 export class AuthService {
   private _userService = userService;
   
@@ -16,7 +15,7 @@ export class AuthService {
   if (existingUser) {
     throw new CustomError("Email already in use", "AUTH", 400);
   }
-    const userData = this._userService.createUser(
+    const userData = await this._userService.createUser(
       payload.name,
       payload.email,
       payload.password, 
@@ -35,11 +34,13 @@ public async login(payload: LoginDTO): Promise<User | null> {
   if (!isPasswordMatch) {
     return null;
   }
-  const userWithoutPassword = removeFields(foundUser, ['password']);
+  
+  // Convert to plain object if it's a Mongoose document
+  const userPlain = typeof foundUser.toJSON === 'function' ? foundUser.toJSON() : foundUser;
+  
+  // Remove password field
+  const { password: _, ...userWithoutPassword } = userPlain as any;
   return userWithoutPassword as User;
-
-
-
 }
 
 

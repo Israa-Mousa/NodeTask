@@ -24,11 +24,17 @@ export class AuthController {
       
       const userData = await this.authService.register(payloadData);
 
-   
-      res.status(201).json(userData);
+      // Generate JWT token
+      const token = signJwt({
+        sub: String(userData.id),
+        name: userData.name,
+        role: userData.role,
+      });
+
+      res.status(201).json({ data: { user: userData, token } });
     } catch (error: any) {
       console.error(`[${MODULES_NAMES.auth}] Register error:`, error);
-      res.status(error?.status || 500).json({
+      res.status(error?.statusCode || 500).json({
         message: error?.message || "Internal Server Error",
       });
     }
@@ -45,19 +51,19 @@ export class AuthController {
       const userData = await this.authService.login(payloadData);
 
       if (!userData) {
-        return res.status(400).json({ message: "Invalid credentials" });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const token = signJwt({
         sub: String(userData.id),
         name: userData.name,
-        // role: userData.role,
+        role: userData.role,
       });
 
-      res.status(200).json({ user: userData, token });
+      res.status(200).json({ data: { user: userData, token } });
     } catch (error: any) {
       console.error(`[${MODULES_NAMES.auth}] Login error:`, error);
-      res.status(error?.status || 500).json({
+      res.status(error?.statusCode || 500).json({
         message: error?.message || "Internal Server Error",
       });
     }

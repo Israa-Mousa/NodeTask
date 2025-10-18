@@ -7,46 +7,27 @@ import { zodValidation } from '../shared/utils/zod.utill';
 export class UserController {
   private _userService = userService;
 
-//   getUsers = (
-//     req: Request<{}, {}, {}, { page: string; limit: string }>,
-//     res: Response
-//   ) => {
-//         try {
-//       const page = Number(req.query.page) || 1;
-//       const limit = Number(req.query.limit) || 10;
-//       const users = this._userService.getUsers(page, limit);
-//       res.ok(users);
-//     } catch (error) {
-//  handleError(error, res);  
-//   }
-  
-//   };
-
   getUsers = async (
-  req: Request<{}, {}, {}, { page: string; limit: string }>,
-  res: Response
-) => {
-  try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const users = await this._userService.getUsers(page, limit); 
-    res.ok(users);
-  } catch (error) {
-    handleError(error, res);  
-  }
-};
+    req: Request<{}, {}, {}, { page: string; limit: string }>,
+    res: Response
+  ) => {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const users = await this._userService.getUsers(page, limit); 
+      res.ok(users);
+    } catch (error) {
+      handleError(error, res);  
+    }
+  };
 
 
-  getUser =async (req: Request<{ id: string }>, res: Response) => {
-          console.log("cccccc");
-
-   try {
+  getUser = async (req: Request<{ id: string }>, res: Response) => {
+    try {
       const id = req.params.id;
-      console.log("cccccc"+typeof id);
-
       if (!id) return res.status(400).json({ error: 'ID required' });
 
-      const user = await this._userService.getUser(Number(id));
+      const user = await this._userService.getUser(id);
       if (!user) {
         throw new CustomError('User not found', 'USER', 404);
       }
@@ -56,19 +37,18 @@ export class UserController {
     }
   };
 
-//create studnet user
+  // Create student user
   createUser = async (req: Request, res: Response) => {
-     try {
-       const parsed = RegisterDTOSchema.safeParse(req.body);
-            //const parsed = zodValidation(RegisterDTOSchema, req.body, 'AUTH');
-     if (!parsed.success) {
-
- return res.status(400).json({
-    error: 'Invalid input',
-    details: parsed.error
-  });    }
-           const { name, email, password, role } = parsed.data;
-
+    try {
+      const parsed = RegisterDTOSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: 'Invalid input',
+          details: parsed.error
+        });
+      }
+      
+      const { name, email, password, role } = parsed.data;
       const user = await this._userService.createUser(name, email, password);
       res.create(user);
     } catch (error) {
@@ -77,12 +57,12 @@ export class UserController {
   };
 
 
-  deleteUser = async(req: Request, res: Response) => {
+  deleteUser = async (req: Request, res: Response) => {
     try {
       const id = req.params.id;
       if (!id) return res.status(400).json({ error: 'ID required' });
 
-      const deleted = await this._userService.deleteUser(Number(id));
+      const deleted = await this._userService.deleteUser(id);
       if (!deleted) {
         throw new CustomError('User not found', 'USER', 404);
       }
@@ -93,10 +73,8 @@ export class UserController {
   };
  
  getCurrentUser = (req: Request, res: Response) => {
- try {
-      const user = req.user;  
-            console.log("cccccc");
-
+    try {
+      const user = req.user;
       if (!user) {
         throw new CustomError('User does not exist', 'USER', 404);  
       }
@@ -106,29 +84,24 @@ export class UserController {
     }
   };
 
-// Update user profile
+  // Update user profile
   updateUser = async (req: Request, res: Response) => {
     try {
       if (!req.user) {
         throw new CustomError('Unauthenticated', 'USER', 401);
       }
-     const parsed = UpdateUserDTOSchema.safeParse(req.body);
-       //  const parsed = zodValidation(UpdateUserDTOSchema, req.body, 'USER');
-
-          console.log(parsed);
+      const parsed = UpdateUserDTOSchema.safeParse(req.body);
      
-     if (!parsed.success) {
- return res.status(400).json({
-    error: 'Invalid input',
-    details: parsed.error
-  });
-    }
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: 'Invalid input',
+          details: parsed.error
+        });
+      }
+      
       const userId = req.user.id;
-    //  const { name, email, role } = parsed.data;
-       const { name, email } = parsed.data;
-
-     // const updatedUser = await this._userService.updateUser(userId, { name, email, role });
-           const updatedUser = await this._userService.updateUser(userId, { name, email });
+      const { name, email } = parsed.data;
+      const updatedUser = await this._userService.updateUser(userId, { name, email });
 
       if (!updatedUser) {
         throw new CustomError('User not found', 'USER', 404);
@@ -140,9 +113,8 @@ export class UserController {
     }
   };
 
-  // create COACH
+  // Create COACH user (Admin only)
   createCoachUser = async (req: Request, res: Response) => {
-  
     try {
       if (!req.user) {
         throw new CustomError('Unauthenticated', 'USER', 401);

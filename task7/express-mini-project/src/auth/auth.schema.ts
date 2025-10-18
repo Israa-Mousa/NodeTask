@@ -1,9 +1,7 @@
-        
-import { fa } from "zod/v4/locales";
 import { userSchema } from "../users/user.schema";
 import { LoginDTO, RegisterDTO } from "./types/auth.dto";
 import z, { ZodType } from "zod";
-import { Role } from "src/users/role.enum";
+import { Role } from "../users/role.enum";
 
 export const registerDTOSchema = userSchema.pick({
     name: true,

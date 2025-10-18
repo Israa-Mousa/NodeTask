@@ -1,120 +1,370 @@
-import { setupTestClients } from "../../tests/hepler/supertest.helper";
-import { CourseRepository } from "../../courses/course.repsitory";
-import { faker } from "@faker-js/faker";
+import request from 'supertest';
+import express from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
 
-describe("Course Routes", () => {
-  let clients: any;
-  let courseRepository: CourseRepository;
-  let createdCourse: any;
+import { courseRouter } from '../course.routes';
+import { authRouter } from '../../auth/auth.routes';
+import { userRouter } from '../../users/user.route';
+import { CourseModel } from '../course.model';
+import { UserModel } from '../../users/user.model';
+import mongoose from 'mongoose';
+import { responseEnhancer } from '../../shared/middlewares/response.middleware';
+
+const app = express();
+app.use(express.json());
+app.use(responseEnhancer);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/courses', courseRouter);
+
+describe('Course Routes', () => {
+  let studentToken: string;
+  let coachToken: string;
+  let adminToken: string;
+  let coach2Token: string;
+  let studentUserId: string;
+  let coachUserId: string;
+  let adminUserId: string;
+  let coach2UserId: string;
+  let testCourseId: string;
 
   beforeAll(async () => {
-    console.log("=== Before All Started ===");
-    clients = await setupTestClients();
-    console.log("Clients Loaded:", clients);
-    courseRepository = new CourseRepository();
+    const MONGODB_URL = process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/myapp-test';
+    await mongoose.connect(MONGODB_URL);
   });
 
-  it("GET /api/v1/courses with unauthed agent will throw error", async () => {
-    const response = await clients.unAuthedClient.get("/api/v1/courses");
-    expect(response.status).toBe(401); 
+  beforeEach(async () => {
+    await UserModel.deleteMany({});
+    await CourseModel.deleteMany({});
+
+    // Create student
+    const studentRes = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        name: 'Student User',
+        email: 'student@test.com',
+        password: 'password1234'
+      });
+    studentToken = studentRes.body.data.token;
+    studentUserId = studentRes.body.data.user.id;
+
+    // Create admin
+    const admin = await UserModel.create({
+      name: 'Admin User',
+      email: 'admin@test.com',
+      password: await require('argon2').hash('admin1234'),
+      role: 'ADMIN'
+    });
+    
+    const adminLoginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'admin@test.com',
+        password: 'admin1234'
+      });
+    adminToken = adminLoginRes.body.data.token;
+    adminUserId = adminLoginRes.body.data.user.id;
+
+    // Create coach 1
+    await request(app)
+      .post('/api/v1/users/coach')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Coach User',
+        email: 'coach@test.com',
+        password: 'password1234'
+      });
+    
+    const coachLoginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'coach@test.com',
+        password: 'password1234'
+      });
+    coachToken = coachLoginRes.body.data.token;
+    coachUserId = coachLoginRes.body.data.user.id;
+
+    // Create coach 2
+    await request(app)
+      .post('/api/v1/users/coach')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Coach 2',
+        email: 'coach2@test.com',
+        password: 'password1234'
+      });
+    
+    const coach2LoginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'coach2@test.com',
+        password: 'password1234'
+      });
+    coach2Token = coach2LoginRes.body.data.token;
+    coach2UserId = coach2LoginRes.body.data.user.id;
   });
 
-  it("GET /api/v1/courses should return list of courses for authed client", async () => {
-    const response = await clients.authedClient.get("/api/v1/courses");
-    expect(response.status).toBe(200); 
-    expect(response.body.data).toEqual(expect.any(Array)); 
+  afterAll(async () => {
+    await mongoose.connection.close();
   });
 
-  it("COACH can create a course", async () => {
-    const newCourse = {
-      title: faker.lorem.words(3),
-      description: faker.lorem.sentence({ min: 5, max: 10 }),
-      image: "course.jpg",
-      createdBy: clients.users.coachUser.id,  
-    };
+  describe('POST /api/v1/courses', () => {
+    it('should allow COACH to create a course', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses')
+        .set('Authorization', `Bearer ${coachToken}`)
+        .send({
+          title: 'Test Course',
+          description: 'Test Description'
+        });
 
-    const res = await clients.authedClient.post("/api/v1/courses").send(newCourse);
-    expect(res.status).toBe(201);  
-    expect(res.body.data).toMatchObject({
-      title: newCourse.title,
-      description: newCourse.description,
-      createdBy: newCourse.createdBy,
+      expect(res.status).toBe(201);
+      expect(res.body.data).toMatchObject({
+        title: 'Test Course',
+        description: 'Test Description'
+      });
+      testCourseId = res.body.data.id;
     });
 
-    createdCourse = res.body.data;  
-  });
+    it('should allow ADMIN to create a course', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          title: 'Admin Course',
+          description: 'Admin Description'
+        });
 
-  it("STUDENT cannot create a course", async () => {
-    const res = await clients.studentClient.post("/api/v1/courses").send({
-      title: "Invalid Course",
-      description: "Should fail",
-      image: "fail.jpg",
-      createdBy: clients.users.studentUser.id,
+      expect(res.status).toBe(201);
     });
-    expect(res.status).toBe(403);  
-  });
 
-  it("Validation error when missing fields", async () => {
-    const res = await clients.authedClient.post("/api/v1/courses").send({
-      title: "",
-      description: "",
+    it('should return 403 for STUDENT trying to create course', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses')
+        .set('Authorization', `Bearer ${studentToken}`)
+        .send({
+          title: 'Student Course',
+          description: 'Should fail'
+        });
+
+      expect(res.status).toBe(403);
     });
-    expect(res.status).toBe(400);  
-  });
 
-  it("Returns list of all courses", async () => {
-    const res = await clients.unAuthedClient.get("/api/v1/courses");
-    expect(res.status).toBe(200);
-    expect(res.body.data).toEqual(expect.any(Array));
-  });
+    it('should return 401 without token', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses')
+        .send({
+          title: 'Test Course',
+          description: 'Test Description'
+        });
 
-  it("Returns empty array when no courses exist", async () => {
-    await courseRepository.delete(createdCourse.id);  
-    const res = await clients.unAuthedClient.get("/api/v1/courses");
-    expect(res.body.data).toEqual([]);
-  });
-
-  it("Returns 404 for invalid course ID", async () => {
-    const res = await clients.unAuthedClient.get("/api/v1/courses/999");
-    expect(res.status).toBe(404); 
-  });
-
-  it("Course creator (COACH) can update their course", async () => {
-    createdCourse = await courseRepository.create(  
-      faker.lorem.words(3),
-      faker.lorem.sentence({ min: 5, max: 10 }),
-      clients.users.coachUser.id,
-      "image.jpg"
-    );
-
-    const res = await clients.authedClient.put(`/api/v1/courses/${createdCourse.id}`).send({
-      title: "Updated Title",
+      expect(res.status).toBe(401);
     });
-    expect(res.status).toBe(200); 
-    expect(res.body.data.title).toBe("Updated Title");
-  });
 
-  it("STUDENT cannot update course", async () => {
-    const res = await clients.studentClient.put(`/api/v1/courses/${createdCourse.id}`).send({
-      title: "Fail Update",
+    it('should return 400 for missing fields', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses')
+        .set('Authorization', `Bearer ${coachToken}`)
+        .send({
+          title: ''
+        });
+
+      expect(res.status).toBe(400);
     });
-    expect(res.status).toBe(403);  
   });
 
-  it("Course creator (COACH) can delete their course", async () => {
-    const res = await clients.authedClient.delete(`/api/v1/courses/${createdCourse.id}`);
-    expect(res.status).toBe(200);
+  describe('GET /api/v1/courses', () => {
+    beforeEach(async () => {
+      // Create test courses
+      await CourseModel.create({
+        title: 'Course 1',
+        description: 'Description 1',
+        createdBy: coachUserId
+      });
+      await CourseModel.create({
+        title: 'Course 2',
+        description: 'Description 2',
+        createdBy: adminUserId
+      });
+    });
+
+    it('should return list of all courses (public)', async () => {
+      const res = await request(app).get('/api/v1/courses');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual(expect.any(Array));
+      expect(res.body.data.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should work without authentication', async () => {
+      const res = await request(app).get('/api/v1/courses');
+
+      expect(res.status).toBe(200);
+    });
   });
 
-  it("STUDENT cannot delete course", async () => {
-    const course = await courseRepository.create(
-      faker.lorem.words(3),
-      faker.lorem.sentence({ min: 5, max: 10 }),
-      clients.users.coachUser.id,  
-      "image.jpg"
-    );
+  describe('GET /api/v1/courses/:id', () => {
+    let courseId: string;
 
-    const res = await clients.studentClient.delete(`/api/v1/courses/${course.id}`);
-    expect(res.status).toBe(403);
+    beforeEach(async () => {
+      const course = await CourseModel.create({
+        title: 'Test Course',
+        description: 'Test Description',
+        createdBy: coachUserId
+      });
+      courseId = course._id.toString();
+    });
+
+    it('should return course by ID (public)', async () => {
+      const res = await request(app).get(`/api/v1/courses/${courseId}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toMatchObject({
+        title: 'Test Course',
+        description: 'Test Description'
+      });
+    });
+
+    it('should return 404 for non-existent course', async () => {
+      const fakeId = new mongoose.Types.ObjectId();
+      const res = await request(app).get(`/api/v1/courses/${fakeId}`);
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('PUT /api/v1/courses/:id', () => {
+    let courseId: string;
+
+    beforeEach(async () => {
+      const course = await CourseModel.create({
+        title: 'Original Title',
+        description: 'Original Description',
+        createdBy: coachUserId
+      });
+      courseId = course._id.toString();
+    });
+
+    it('should allow course creator (COACH) to update their course', async () => {
+      const res = await request(app)
+        .put(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${coachToken}`)
+        .send({
+          title: 'Updated Title',
+          description: 'Updated Description'
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toMatchObject({
+        title: 'Updated Title',
+        description: 'Updated Description'
+      });
+    });
+
+    it('should allow ADMIN to update any course', async () => {
+      const res = await request(app)
+        .put(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          title: 'Admin Updated'
+        });
+
+      expect(res.status).toBe(201);
+    });
+
+    it('should return 403 for different COACH trying to update', async () => {
+      const res = await request(app)
+        .put(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${coach2Token}`)
+        .send({
+          title: 'Should Fail'
+        });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('should return 403 for STUDENT trying to update', async () => {
+      const res = await request(app)
+        .put(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${studentToken}`)
+        .send({
+          title: 'Should Fail'
+        });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('should return 401 without token', async () => {
+      const res = await request(app)
+        .put(`/api/v1/courses/${courseId}`)
+        .send({
+          title: 'Should Fail'
+        });
+
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe('DELETE /api/v1/courses/:id', () => {
+    let courseId: string;
+
+    beforeEach(async () => {
+      const course = await CourseModel.create({
+        title: 'To Delete',
+        description: 'Will be deleted',
+        createdBy: coachUserId
+      });
+      courseId = course._id.toString();
+    });
+
+    it('should allow course creator (COACH) to delete their course', async () => {
+      const res = await request(app)
+        .delete(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${coachToken}`);
+
+      expect(res.status).toBe(200);
+    });
+
+    it('should allow ADMIN to delete any course', async () => {
+      const res = await request(app)
+        .delete(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+    });
+
+    it('should return 403 for different COACH trying to delete', async () => {
+      const res = await request(app)
+        .delete(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${coach2Token}`);
+
+      expect(res.status).toBe(403);
+    });
+
+    it('should return 403 for STUDENT trying to delete', async () => {
+      const res = await request(app)
+        .delete(`/api/v1/courses/${courseId}`)
+        .set('Authorization', `Bearer ${studentToken}`);
+
+      expect(res.status).toBe(403);
+    });
+
+    it('should return 401 without token', async () => {
+      const res = await request(app)
+        .delete(`/api/v1/courses/${courseId}`);
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 404 for non-existent course', async () => {
+      const fakeId = new mongoose.Types.ObjectId();
+      const res = await request(app)
+        .delete(`/api/v1/courses/${fakeId}`)
+        .set('Authorization', `Bearer ${coachToken}`);
+
+      expect(res.status).toBe(404);
+    });
   });
 });
+
