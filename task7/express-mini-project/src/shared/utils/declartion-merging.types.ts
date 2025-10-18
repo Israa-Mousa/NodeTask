@@ -10,6 +10,7 @@ export type MyEnvs={
     NODE_ENV:'development' | 'production' | 'test';
     SESSION_SECRET:string;
     JWT_SECRET:string;
+    MONGODB_URL:string;
 }
 
 declare global{

@@ -8,6 +8,8 @@ import { authRouter } from "./auth/auth.routes";
 import { responseEnhancer } from "./shared/middlewares/response.middleware";
 import { isProduction } from './config/app.config';
 import { courseRouter } from "./courses/course.routes";
+
+import './service/mongoose.service';
 import path from 'node:path';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -49,12 +51,12 @@ app.use(ApiRoute + 'auth', authRouter);
 app.use(ApiRoute + 'users', userRouter);
 app.use(ApiRoute + 'courses', courseRouter);
 
+
 app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   handleError(error, res);
 });
+if(process.env.NODE_ENV !== 'test'){
 
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log('App is running in port: ', PORT);
+})}
