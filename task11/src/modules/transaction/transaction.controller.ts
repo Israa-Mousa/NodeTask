@@ -1,4 +1,5 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { TransactionService } from './transaction.service';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import { paginationSchema } from 'src/utils/api.util';
@@ -10,11 +11,15 @@ const transactionQuerySchema = paginationSchema.extend({
   fields: z.string().optional(),
 });
 
+@ApiTags('Transactions')
+@ApiBearerAuth('access_token')
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get user transactions with pagination' })
+  @ApiResponse({ status: 200, description: 'Transactions retrieved successfully' })
   findAll(
     @Req() request: Express.Request,
     @Query(new ZodValidationPipe(transactionQuerySchema))

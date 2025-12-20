@@ -20,10 +20,10 @@ export class TransactionService {
       
       // Handle sorting
       const sortBy = query.sortBy || 'createdAt';
-      const orderBy: Prisma.UserTransactionOrderByWithRelationInput = 
+      const orderBy = 
         sortBy === 'id' 
-          ? { id: 'desc' }
-          : { createdAt: 'desc' };
+          ? { id: 'desc' as const }
+          : { createdAt: 'desc' as const };
 
       // Handle field selection
       const selectFields = query.fields
@@ -33,7 +33,7 @@ export class TransactionService {
       const transactions = await prisma.userTransaction.findMany({
         ...removeFields(pagination, ['page']),
         where: { userId },
-        orderBy,
+        orderBy: orderBy as any,
         select: selectFields || {
           id: true,
           amount: true,

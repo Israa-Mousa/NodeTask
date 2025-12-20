@@ -10,18 +10,18 @@ import { ProductModule } from './modules/product/product.module';
 import { FileModule } from './modules/file/file.module';
 import { OrderModule } from './modules/order/order.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
-import path from 'path';
+import { join } from 'path';
 
-const envFilePath = path.join(
-  __dirname,
-  `../.env.${process.env.NODE_ENV === 'development' ? 'dev' : 'prod'}`,
-);
+const nodeEnv = process.env.NODE_ENV || 'development';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath,
+      envFilePath: [
+        join(process.cwd(), `.env.${nodeEnv}`),
+        join(process.cwd(), '.env'),
+      ],
     }),
     AuthModule,
     UserModule,

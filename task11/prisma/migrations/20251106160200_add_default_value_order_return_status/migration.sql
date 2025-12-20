@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `order_returns` MODIFY `status` ENUM('PICKED', 'REFUND', 'PENDING') NOT NULL DEFAULT 'PENDING';

@@ -2,7 +2,7 @@
 // function main // delete all records from all tables and reseed with some data
 import { PrismaClient } from 'generated/prisma';
 import { generateProductSeed } from './product.seeds.js';
-import { generateUserSeed, getMerchantUser } from './user.seeds.js';
+import { generateUserSeed, getMerchantUser, getAdminUser } from './user.seeds.js';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ async function main() {
   // Reseed users
   const userSeeds = faker.helpers.multiple(generateUserSeed, { count: 15 });
   await prisma.user.createMany({
-    data: [...userSeeds, await getMerchantUser()],
+    data: [...userSeeds, await getMerchantUser(), await getAdminUser()],
   });
 
   const merchantUsers = await prisma.user.findMany({

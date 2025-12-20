@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, Req, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { Roles } from 'src/decorators/roles.decorator';
 import type {
@@ -23,12 +24,30 @@ import type {
 import { User } from 'src/decorators/user.decorator';
 import { UserResponseDTO } from '../auth/dto/auth.dto';
 
+@ApiTags('Orders')
+@ApiBearerAuth('access_token')
 @Controller('order')
 @Roles(['CUSTOMER'])
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @ApiBody({
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          productId: { type: 'number' },
+          qty: { type: 'number' }
+        },
+        required: ['productId','qty']
+      }
+    }
+  })
+  @ApiOperation({ summary: 'Create a new order' })
+  @ApiResponse({ status: 201, description: 'Order created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid order data' })
   create(
     @Body(new ZodValidationPipe(createOrderDTOValidationSchema))
     createOrderDto: CreateOrderDTO,
@@ -39,6 +58,8 @@ export class OrderController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all user orders with pagination' })
+  @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
   findAll(
     @Req() request: Express.Request,
 
@@ -49,6 +70,9 @@ export class OrderController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get order details by ID' })
+  @ApiResponse({ status: 200, description: 'Order retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
   findOne(
     @Param('id') id: string,
     @Req() request: Express.Request,
@@ -60,6 +84,29 @@ export class OrderController {
 
   // create return
   @Post('return')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        orderId: { type: 'number' },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              productId: { type: 'number' },
+              qty: { type: 'number' }
+            },
+            required: ['productId','qty']
+          }
+        }
+      },
+      required: ['orderId','items']
+    }
+  })
+  @ApiOperation({ summary: 'Create a return request for an order' })
+  @ApiResponse({ status: 201, description: 'Return request created' })
+  @ApiResponse({ status: 400, description: 'Invalid return data' })
   createReturn(
     @Body(new ZodValidationPipe(createReturnDTOValidationSchema))
     createReturnDto: CreateOrderReturnDTO,
@@ -74,6 +121,16 @@ export class OrderController {
   // Admin routes
   @Roles(['ADMIN'])
   @Post(':id/status')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { status: { type: 'string', enum: ['PENDING','SUCCESS'] } },
+      required: ['status']
+    }
+  })
+  @ApiOperation({ summary: 'Update order status (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Order status updated' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   updateOrderStatus(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateOrderStatusValidationSchema))
@@ -84,6 +141,16 @@ export class OrderController {
 
   @Roles(['ADMIN'])
   @Post('return/:returnId/status')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { status: { type: 'string', enum: ['PENDING','PICKED','REFUND'] } },
+      required: ['status']
+    }
+  })
+  @ApiOperation({ summary: 'Update return status (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Return status updated' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   updateReturnStatus(
     @Param('returnId') returnId: string,
     @Body(new ZodValidationPipe(updateReturnStatusValidationSchema))

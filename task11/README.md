@@ -1,136 +1,203 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🛍️ Simple Shop Backend - Enhanced Version
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS-based e-commerce backend with advanced features including admin role management, secure admin actions, comprehensive transaction tracking, and enhanced pagination/sorting on all findAll routes.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## ✨ Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 👤 **Admin Role Management**
+- ✅ Role-based access control (ADMIN, CUSTOMER, MERCHANT)
+- ✅ Secure admin routes with `@Roles(['ADMIN'])` decorator
+- ✅ JWT authentication for all protected routes
+- ✅ Global AuthGuard and RolesGuard middleware
 
-## New Features Implementation
+### 🛠️ **Secured Admin Actions**
+- ✅ Update order status (PENDING → SUCCESS)
+- ✅ Update return status (PENDING → PICKED → REFUND)
+- ✅ Automatic CREDIT transaction generation on refund
+- ✅ Permission-guarded endpoints with role validation
 
-This project has been enhanced with the following features:
+---
 
-### 1. Admin Role Management
-- Added `ADMIN` role to the `UserRole` enum in Prisma schema
-- All admin routes are secured with `@Roles(['ADMIN'])` decorator
+## 🏗️ Project Structure
 
-### 2. Admin Actions
-- **Update Order Status**: `POST /order/:id/status` - Allows admins to update order status (PENDING/SUCCESS)
-- **Update Return Status**: `POST /order/return/:returnId/status` - Allows admins to update return status (PENDING/PICKED/REFUND)
-  - When return status is updated to REFUND, a credit transaction is automatically created
+```
+simple-shop/
+├── src/
+│   ├── app.module.ts              # Main app with global guards
+│   ├── main.ts                    # Bootstrap
+│   ├── modules/
+│   │   ├── auth/                  # Authentication & JWT
+│   │   │   ├── guards/
+│   │   │   │   ├── auth.guard.ts  # JWT validation
+│   │   │   │   └── roles.guard.ts # Role authorization
+│   │   │   └── ...
+│   │   ├── user/                  # User management
+│   │   ├── product/               # Product catalog
+│   │   ├── order/                 # Order & return management
+│   │   ├── transaction/           # Transaction tracking
+│   │   ├── database/              # Prisma & pagination helpers
+│   │   └── ...
+│   ├── decorators/
+│   │   ├── roles.decorator.ts     # @Roles(['ADMIN'])
+│   │   ├── public.decorator.ts    # @IsPublic()
+│   │   └── user.decorator.ts      # @User()
+│   ├── utils/                     # Utilities
+│   └── ...
+├── prisma/
+│   ├── schema.prisma              # Data models
+│   └── migrations/                # Database migrations
+├── .env.dev                       # Development environment
+├── .env.prod                      # Production environment
+├── package.json
+├── IMPLEMENTATION_SUMMARY.md      # Feature details
+├── API_TESTING_GUIDE.md           # Testing instructions
+└── README.md                      # This file
+```
 
-### 3. Transactions Module
-- New module at `/transaction` endpoint
-- Users can view all their transactions with pagination, sorting, and field selection
-- Endpoint: `GET /transaction`
+---
 
-### 4. Enhanced findAll Routes
-All `findAll` routes now support:
-- **Pagination**: `?page=1&limit=10` (already existed, now enhanced)
-- **Sorting**: `?sortBy=createdAt` or `?sortBy=id` (defaults to newest first)
-- **Field Selection**: `?fields=id,name,email` (comma-separated list of fields to return)
+## 🚀 Quick Start
 
-Enhanced routes:
-- `GET /user` - Get all users
-- `GET /product` - Get all products
-- `GET /order` - Get all orders (for authenticated user)
-- `GET /transaction` - Get all transactions (for authenticated user)
+### 1. Prerequisites
+- Node.js 18+
+- MySQL 8.0+
+- npm or yarn
 
-### 5. Security
-- All admin routes are protected by `RolesGuard`
-- Admin routes require `ADMIN` role in the user's JWT token
-- Transaction routes are user-scoped (users can only see their own transactions)
-
-## Setup Instructions
-
-After cloning, run the following commands:
+### 2. Installation
 
 ```bash
 # Install dependencies
 npm install
 
-# Generate Prisma client (after schema changes)
+# Generate Prisma client
 npx prisma generate
 
-# Create and run migration for ADMIN role
-npx prisma migrate dev --name add_admin_role
+# Set up environment variables
+cp .env.dev .env
+# Edit .env with your database credentials
+```
 
-# Run the application
+### 3. Database Setup
+
+```bash
+# Run migrations
+npx prisma migrate deploy
+
+# (Optional) Seed initial data
+npm run seed
+```
+
+### 4. Run Application
+
+```bash
+# Development
 npm run dev
+
+# Production
+npm run build
+npm run start:prod
 ```
 
-## Project setup
+---
+
+## 📚 API Endpoints
+
+### Authentication
+- `POST /auth/register` - Create account
+- `POST /auth/login` - Login
+
+### Users (Paginated, Sortable, Filterable)
+- `GET /user` - List users
+- `GET /user/:id` - Get user
+- `PATCH /user/:id` - Update user
+
+### Products (Paginated, Sortable, Searchable)
+- `GET /product` - List products
+- `POST /product` - Create product
+- `GET /product/:id` - Get product
+- `PATCH /product/:id` - Update product
+
+### Orders (Paginated, Sortable)
+- `GET /order` - List user's orders
+- `POST /order` - Create order
+- `GET /order/:id` - Get order
+- **`POST /order/:id/status`** - Update order status (ADMIN ONLY)
+- `POST /order/return` - Create return
+- **`POST /order/return/:returnId/status`** - Update return status (ADMIN ONLY)
+
+### Transactions (Paginated, Sortable)
+- `GET /transaction` - List user's transactions
+
+---
+
+## 🔐 Security
+
+- JWT authentication on all protected routes
+- Role-based access control (ADMIN, CUSTOMER, MERCHANT)
+- Global AuthGuard and RolesGuard
+- Password encryption with Argon2
+- Input validation with Zod
+
+---
+
+## 📊 Query Parameters
+
+```
+GET /order?page=1&limit=10&sortBy=createdAt&fields=id,orderStatus
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | number | 1 | Page number |
+| `limit` | number | 10 | Items per page |
+| `sortBy` | enum | createdAt | Sort field |
+| `fields` | string | all | Select fields |
+
+---
+
+## 📖 Documentation
+
+- [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - Feature details
+- [API_TESTING_GUIDE.md](./API_TESTING_GUIDE.md) - Testing examples
+
+---
+
+## ✅ What's Implemented
+
+- [x] Admin role management with role-based guards
+- [x] Secured admin actions (order & return status updates)
+- [x] Transactions module with pagination
+- [x] Enhanced findAll routes with pagination, sorting, field selection
+- [x] Automatic CREDIT transaction on refund
+- [x] Global error handling
+- [x] JWT authentication
+- [x] Input validation
+
+---
+
+## 🚀 Running
 
 ```bash
-$ npm install
+# Development
+npm run dev
+
+# Tests
+npm run test
+
+# E2E Tests
+npm run test:e2e
+
+# Production
+npm run build
+npm run start:prod
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+**Status:** ✅ All features implemented and compiled successfully!
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
 - Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
 - Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
 - To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).

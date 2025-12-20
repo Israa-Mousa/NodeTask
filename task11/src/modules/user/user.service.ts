@@ -20,7 +20,7 @@ export class UserService {
       sortBy?: 'createdAt' | 'id';
       fields?: string;
     },
-  ): Promise<PaginatedResult<Omit<User, 'password'>>> {
+  ): Promise<PaginatedResult<Omit<User, 'password'> | any>> {
     return this.prismaService.$transaction(async (prisma) => {
       const pagination = this.prismaService.handleQueryPagination(query);
       
@@ -37,9 +37,12 @@ export class UserService {
 
       const users = await prisma.user.findMany({
         ...removeFields(pagination, ['page']),
-        orderBy,
-        ...(selectFields ? { select: selectFields } : { omit: { password: true } }),
-      });
+        orderBy: orderBy as any,
+        ...(selectFields 
+          ? { select: selectFields as any } 
+          : { omit: { password: true } }
+        ),
+      } as any) as any;
       const count = await prisma.user.count();
       return {
         data: users,

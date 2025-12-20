@@ -81,10 +81,10 @@ export class OrderService {
 
       // Handle sorting
       const sortBy = query.sortBy || 'createdAt';
-      const orderBy: Prisma.OrderOrderByWithRelationInput = 
+      const orderBy = 
         sortBy === 'id' 
-          ? { id: 'desc' }
-          : { createdAt: 'desc' };
+          ? { id: 'desc' as const }
+          : { createdAt: 'desc' as const };
 
       // Handle field selection
       const selectFields = query.fields
@@ -94,9 +94,9 @@ export class OrderService {
       const orders = await prisma.order.findMany({
         ...removeFields(pagination, ['page']),
         where: { userId },
-        orderBy,
+        orderBy: orderBy as any,
         ...(selectFields 
-          ? { select: selectFields } 
+          ? { select: selectFields as any } 
           : {
               include: {
                 orderProducts: true,
@@ -105,7 +105,7 @@ export class OrderService {
               },
             }
         ),
-      }) as any;
+      } as any) as any;
 
       const count = await prisma.order.count({
         where: { userId },

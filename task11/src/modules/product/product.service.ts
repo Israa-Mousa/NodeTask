@@ -44,10 +44,7 @@ export class ProductService {
       
       // Handle sorting
       const sortBy = query.sortBy || 'id';
-      const orderBy: Prisma.ProductOrderByWithRelationInput = 
-        sortBy === 'id' 
-          ? { id: 'desc' }
-          : { createdAt: 'desc' };
+      const orderBy = { id: 'desc' as const };
 
       // Handle field selection
       const selectFields = query.fields
@@ -57,7 +54,7 @@ export class ProductService {
       const products = await prisma.product.findMany({
         ...removeFields(pagination, ['page']),
         where: whereClause,
-        orderBy,
+        orderBy: orderBy as any,
         ...(selectFields ? { select: selectFields } : {}),
       });
       const count = await prisma.product.count({
