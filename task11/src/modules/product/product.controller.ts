@@ -88,6 +88,18 @@ export class ProductController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a product (Merchant only)' })
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        description: { type: 'string' },
+        price: { type: 'number' },
+        file: { type: 'string', format: 'binary' },
+      },
+      required: [],
+    },
+  })
   @ApiResponse({ status: 200, description: 'Product updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @UseInterceptors(FileInterceptor('file'), FileCleanupInterceptor)

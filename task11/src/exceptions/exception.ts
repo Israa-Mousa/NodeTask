@@ -170,6 +170,7 @@ export class ImageKitExceptionFilter implements ExceptionFilter {
       path: req.url,
       message:
         'We couldn’t handle your image upload right now. Please try again later',
+      details: isDevelopment ? String(exception.message) : undefined,
     };
 
     return res.status(status).json(error);

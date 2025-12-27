@@ -32,5 +32,6 @@ export type ApiErrorResponse = {
   statusCode: HttpStatus;
   path: string;
   fields?: { field: string; message: string }[];
+  details?: string;
 };
 export type UnifiedApiResponse<T> = ApiSuccessResponse<T>;

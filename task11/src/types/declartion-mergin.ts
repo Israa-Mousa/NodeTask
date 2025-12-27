@@ -2,11 +2,14 @@
 
 import ImageKit from '@imagekit/nodejs';
 import { UserResponseDTO } from 'src/modules/auth/dto/auth.dto';
-export type EnvVariables = {
-  JWT_SECRET: string;
+export interface EnvVariables {
+  NODE_ENV: 'development' | 'production' | 'test';
   IMAGEKIT_SECRET_KEY: string;
-  NODE_ENV: 'development' | 'production';
-};
+  IMAGEKIT_PUBLIC_KEY?: string;
+  IMAGEKIT_URL_ENDPOINT?: string;
+  JWT_SECRET: string;
+}
+
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
